@@ -1,0 +1,25 @@
+# === Python ===
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.venv
+venv/
+ENV/
+
+# === Archivos de datos pesados / Animaciones / Temporales ===
+# (Agrega aquí las extensiones de archivos grandes que no quieras en GitHub)
+*.log
+*.out
+*.dat
+*.tmp
+*.err
+outputs/
+temp/
+
+# === Entornos de desarrollo y Sistema (Linux/KDE) ===
+.vscode/
+.idea/
+.DS_Store
+.directory
