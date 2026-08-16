@@ -1,0 +1,874 @@
+{
+  "name": "Guardado",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "maxResults": 5,
+        "filters": {
+          "includeSpamTrash": false,
+          "includeDrafts": false,
+          "labelIds": [
+            "INBOX"
+          ],
+          "q": "category:primary"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -1392,
+        -304
+      ],
+      "id": "0c329026-03ef-4e18-81e7-dff60c8c3a34",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analiza el siguiente correo:\n\nAsunto: {{ $('Gmail Trigger').item.json.headers.subject }}\nContenido: {{ $('Gmail Trigger').item.json.text }}",
+        "options": {
+          "systemMessage": "Eres un agente de IA experto en análisis, filtrado y extracción de datos de correos electrónicos. Tu única tarea es procesar el texto del correo que te proporcionará el usuario y devolver la respuesta estrictamente en un formato JSON (diccionario) válido, sin introducciones, saludos ni explicaciones adicionales fuera del JSON.\n\nInstrucciones de análisis:\n1. RESUMEN: Genera un resumen ejecutivo, breve y detallado en español que resalte únicamente la información más importante para el usuario, tales como:\n   - Fechas estimadas de entrega u horas de llegada de paquetes.\n   - Actualizaciones críticas de estado de envíos (ej. \"En tránsito\", \"Asignado\", \"Entregado\").\n   - Correos de aceptación, confirmación de trámites o notificaciones oficiales importantes.\n   ❌ REGLA ESTRICTA: Ignora por completo y no incluyas en el resumen la fecha en la que salió el correo original ni números de clave, tokens de acceso o contraseñas de seguridad.\n\n2. EVALUACIÓN DE IMPORTANCIA: Determina si el correo es verdaderamente importante para el usuario (como el seguimiento de sus pedidos, confirmaciones académicas o alertas oficiales) o si carece de relevancia inmediata (notificaciones genéricas de redes sociales, publicidad o boletines).\n   - El correo NUNCA debe ser considerado importante si es Spam, Promociones o Publicidad.\n\nDebes mapear y estructurar el resultado final exactamente en este formato de diccionario (JSON):\n{\n  text: \"Aquí el resumen detallado y optimizado que redactes\",\n  bool: true o false\n}\n\n(Donde 'true' significa que el correo es importante y merece atención, y 'false' significa que no es importante o es spam). Asegúrate de respetar la sintaxis JSON, cerrando correctamente las comillas y sin \\n o \\."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -800,
+        -320
+      ],
+      "id": "7d0bb55c-a259-46f1-ac10-fd690234b637",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {
+          "maxTokensToSample": 4096,
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        -160
+      ],
+      "id": "44811f86-53df-484c-84c7-52bf7d5a468f",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst total_dic={id:$('Gmail Trigger').first().json.id,\n                asunto:$('Gmail Trigger').first().json.headers.subject,\n                correo:$('Gmail Trigger').first().json.from.value[0].address,\n                emisor:$('Gmail Trigger').first().json.from.value[0].name,\n                contenido:$input.first().json.resumen_ia,\n                fecha:$('Gmail Trigger').first().json.headers.date,\n                catogoria1:$('Gmail Trigger').first().json.labelIds[1],\n                categoria2:$('Gmail Trigger').first().json.labelIds[2],\n                booleano:$input.first().json.importante};\nreturn total_dic"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        -320
+      ],
+      "id": "8c3b7637-85dd-4d3e-bc7e-14580d221c58",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Jalamos el texto sucio que viene en el \"output\"\nconst textoSucio = $input.first().json.output;\n\n// 2. Usamos la función mágica de JS para transformar un texto a JSON real\nconst datosLimpios = JSON.parse(textoSucio);\n\n// 3. Extraemos los valores limpios en variables listas\nconst miResumen = datosLimpios.text;\nconst esImportante = datosLimpios.bool;\n\n// 4. Se lo inyectamos al flujo de n8n para que las uses adelante\n$json.resumen_ia = miResumen;\n$json.importante = esImportante;\n\nreturn $json;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        -320
+      ],
+      "id": "f4585f47-eb95-42c8-a10b-62263a9b1ad5",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e11f4850-9f9f-4399-8d1b-1d6dbce9bd36",
+              "leftValue": "={{ $json.booleano }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -64,
+        -320
+      ],
+      "id": "9c77cfd8-62ac-4b45-95d0-f876584843cb",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_gmail",
+          "mode": "list",
+          "cachedResultName": "correos_gmail"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "mensaje_id": "={{ $json.id }}",
+            "asunto": "={{ $json.asunto }}",
+            "correo": "={{ $json.correo }}",
+            "emisor": "={{ $json.emisor }}",
+            "contenido": "={{ $json.contenido }}",
+            "fecha": "={{ $json.fecha }}",
+            "categoria1": "={{ $json.catogoria1 }}",
+            "categoria2": "={{ $json.categoria2 }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "mensaje_id",
+              "displayName": "mensaje_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "asunto",
+              "displayName": "asunto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correo",
+              "displayName": "correo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "emisor",
+              "displayName": "emisor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contenido",
+              "displayName": "contenido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "categoria1",
+              "displayName": "categoria1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "categoria2",
+              "displayName": "categoria2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "procesado_at",
+              "displayName": "procesado_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        240,
+        -336
+      ],
+      "id": "12493c81-d4a5-44da-b230-a07f437f2632",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_gmail",
+          "mode": "list",
+          "cachedResultName": "correos_gmail"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "mensaje_id",
+              "value": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1216,
+        -304
+      ],
+      "id": "ad3da52c-7706-4bd1-849e-34af29e8b0f8",
+      "name": "Select rows from a table",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "06256eeb-b098-4636-b065-d9d3de7b4b6b",
+              "leftValue": "={{$json}}",
+              "rightValue": 0,
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1040,
+        -304
+      ],
+      "id": "a6ee461d-6f0c-4d3c-8729-3db9d9d54655",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const fullText = item.json.text || \"\";\n  const originalSubject = item.json.subject || \"\";\n  \n  let mensajeLimpio = fullText;\n\n  // Extraemos únicamente el cuerpo del mensaje tras la cabecera del reenvío\n  if (fullText.includes(\"Asunto:\")) {\n    const partes = fullText.split(/Asunto:.*(?:\\r?\\n)+/i);\n    if (partes.length > 1) {\n      mensajeLimpio = partes[1].trim();\n    }\n  } else if (fullText.includes(\"Subject:\")) {\n    const partes = fullText.split(/Subject:.*(?:\\r?\\n)+/i);\n    if (partes.length > 1) {\n      mensajeLimpio = partes[1].trim();\n    }\n  }\n\n  // Unimos el Subject original con el mensaje limpio\n  const textoCombinado = `Subject: ${originalSubject}\\n\\n${mensajeLimpio}`;\n\n  return {\n    json: {\n      texto_para_ai: textoCombinado,\n      subject: originalSubject,\n      mensaje_limpio: mensajeLimpio\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1168,
+        128
+      ],
+      "id": "6c38382d-3939-415c-afb6-378e3178bf1a",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "includeSpamTrash": false,
+          "includeDrafts": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -1376,
+        128
+      ],
+      "id": "a8c20107-c2e4-42e4-aa16-58670b4a8537",
+      "name": "Gmail Trigger2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "",
+          "name": "outlook"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_outlook",
+          "mode": "list",
+          "cachedResultName": "correos_outlook"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "id_messes",
+              "value": "={{ $('Gmail Trigger2').item.json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -944,
+        128
+      ],
+      "id": "b6e14b6e-8517-4edd-bded-7353618e0497",
+      "name": "Select rows from a table1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analiza el siguiente correo:\n\nAsunto:{{ $('Code in JavaScript2').item.json.subject }}\nContenido: {{ $('Code in JavaScript2').item.json.mensaje_limpio }}",
+        "options": {
+          "systemMessage": "Eres un agente de IA experto en análisis, filtrado y extracción de datos de correos electrónicos. Tu única tarea es procesar el texto del correo que te proporcionará el usuario y devolver la respuesta estrictamente en formato JSON válido, sin introducciones, saludos, comentarios ni bloques de código Markdown (no uses ```json).\n\nINSTRUCCIONES DE ANÁLISIS:\n\n1. RESUMEN:\n   Genera un resumen ejecutivo, breve y directo en español que resalte únicamente la información más importante para el usuario, como:\n   - Fechas estimadas de entrega u horas de llegada de paquetes/compras.\n   - Actualizaciones críticas de estado de envíos (ej. \"En tránsito\", \"Asignado\", \"Entregado\").\n   - Correos de aceptación, confirmación de trámites académicos, solicitudes, proyectos o notificaciones oficiales de la universidad Yachay Tech.\n   - Novedades y convocatorias sobre pasantías, prácticas preprofesionales, tesis o avisos institucionales de Yachay Tech.\n   ❌ REGLA ESTRICTA DE SEGURIDAD: Ignora por completo y no incluyas en el resumen la fecha de envío del correo original, ni números de clave, tokens de acceso o contraseñas de seguridad.\n\n2. EVALUACIÓN DE IMPORTANCIA (bool):\n   Determina si el correo es verdaderamente importante para el usuario:\n   - DEBE SER VERDADERO (`true`): Correos sobre pasantías, proyectos académicos, avisos de Yachay Tech, seguimiento de pedidos/paquetes, confirmaciones de trámites o alertas oficiales importantes. NUNCA iginores ni descartes un correo si está relacionado con pasantías, proyectos universitarios o avisos institucionales de Yachay Tech.\n   - DEBE SER FALSO (`false`): Notificaciones genéricas de redes sociales, spam, promociones, publicidad, boletines o avisos automáticos sin relevancia operativa.\n\nFORMATO DE SALIDA ESTRICTO (JSON):\nResponde únicamente con un objeto JSON plano estructurado exactamente así:\n\n{\n  \"text\": \"Aquí el resumen detallado y optimizado que redactes\",\n  \"bool\": true\n}\n\nAsegúrate de respetar la sintaxis JSON estricta (claves entre comillas dobles, valor booleano en minúsculas sin comillas) y evita saltos de línea sin escapar o comillas internas que rompan la estructura."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -544,
+        112
+      ],
+      "id": "ba39cdc9-49b4-4a21-bac3-d677f8db9ea5",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {
+          "maxTokensToSample": 4096,
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        288
+      ],
+      "id": "d841c831-3b24-4ba3-a266-e713904de419",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Jalamos el texto sucio que viene en el \"output\"\nconst textoSucio = $input.first().json.output;\n\n// 2. Usamos la función mágica de JS para transformar un texto a JSON real\nconst datosLimpios = JSON.parse(textoSucio);\n\n// 3. Extraemos los valores limpios en variables listas\nconst miResumen = datosLimpios.text;\nconst esImportante = datosLimpios.bool;\n\n// 4. Se lo inyectamos al flujo de n8n para que las uses adelante\n$json.resumen_ia = miResumen;\n$json.importante = esImportante;\n\nreturn $json;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        112
+      ],
+      "id": "8f266238-e5f0-4891-9c99-13ec1f575b7f",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst total_dic={id:$('Gmail Trigger2').first().json.id,\n                asunto:$('Code in JavaScript2').first().json.subject,\n                contenido:$input.first().json.resumen_ia,\n                fecha:$('Gmail Trigger2').first().json.date,\n                booleano:$input.first().json.importante};\nreturn total_dic"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        112
+      ],
+      "id": "ab2b8854-3f79-4135-97c0-c1d90cd60e07",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e11f4850-9f9f-4399-8d1b-1d6dbce9bd36",
+              "leftValue": "={{ $json.booleano }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        288,
+        112
+      ],
+      "id": "7db789a4-5286-4bd6-9986-69bd6846155f",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_outlook",
+          "mode": "list",
+          "cachedResultName": "correos_outlook"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "asunto": "={{ $json.asunto }}",
+            "contenido": "={{ $json.contenido }}",
+            "id_messes": "={{ $json.id }}",
+            "fecha_registro": "={{ $json.fecha }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "id_messes",
+              "displayName": "id_messes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "asunto",
+              "displayName": "asunto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "contenido",
+              "displayName": "contenido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fecha_registro",
+              "displayName": "fecha_registro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        544,
+        96
+      ],
+      "id": "2f62430e-08e8-4699-bef7-4a86c1d480f8",
+      "name": "Insert rows in a table1",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "06256eeb-b098-4636-b065-d9d3de7b4b6b",
+              "leftValue": "={{$json}}",
+              "rightValue": 0,
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -736,
+        128
+      ],
+      "id": "19b6939e-3add-4347-bcf2-fd1fafeafa4c",
+      "name": "If3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table1": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "b82225de-7a20-4de4-b6b5-fc186c5b2b56",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": ""
+  },
+  "nodeGroups": [],
+  "id": "",
+  "tags": []
+}
