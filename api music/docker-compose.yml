@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  stream-music-api:
+    build: .
+    container_name: stream_music_service
+    restart: unless-stopped
+    ports:
+      - "8000:8000" # Mapea FastAPI al puerto 8000 de tu VPS
+    volumes:
+      # Monta tu carpeta local de código para poder editar los scripts sin reconstruir la imagen
+      - ./python_code:/app
+    environment:
+      - PYTHONUNBUFFERED=1
