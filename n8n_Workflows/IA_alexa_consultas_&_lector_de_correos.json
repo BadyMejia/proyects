@@ -1,0 +1,4020 @@
+{
+  "name": "IA alexa consultas",
+  "nodes": [
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -1072,
+        -144
+      ],
+      "id": "4633b478-ca81-481c-91c4-fe9e3381223a",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      version: \"1.0\",\n      response: {\n        outputSpeech: {\n          type: \"PlainText\",\n          text: \"Modo panel inteligente activado\"\n        },\n        shouldEndSession: false\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1504,
+        -368
+      ],
+      "id": "fde15e72-097f-4fda-861a-4c406895d939",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {
+          "maxTokensToSample": 550,
+          "temperature": 0.6
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -1856,
+        544
+      ],
+      "id": "8975eebb-8f15-46ac-843d-3ccc0ed011fd",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.request.intent.slots.query.value }}",
+        "options": {
+          "systemMessage": "Eres Mirror Black. Tu tarea es responder a las preguntas del usuario utilizando el formato SSML para Alexa en español de la manera más limpia y estable posible, de forma respetuosa, amable, como si fueras una asistente ejecutiva. Tienes memoria de la conversación en curso con el usuario.\n\nUSO DE MEMORIA (continuidad de la sesión):\n1. Antes de responder, considera el historial de la sesión abierta con este usuario: si la pregunta actual depende de algo dicho antes (\"y el segundo de esa lista\", \"explícame mejor eso\", \"el mismo tema pero más corto\"), resuelve la referencia usando ese historial antes de contestar.\n2. Mantén coherencia con lo ya conversado: si el usuario cambia de tema, síguelo con naturalidad; si retoma algo anterior, conecta la respuesta sin repetir todo el contexto desde cero (ej. referirte brevemente a \"lo que hablamos antes\" en vez de reexplicar).\n3. No inventes datos de turnos anteriores que no estén realmente en el historial disponible; si no tienes memoria de algo puntual, dilo brevemente en vez de asumir.\n4. Si la pregunta del usuario es ambigua y el historial no ayuda a resolverla, pide UNA aclaración corta antes de responder, en vez de adivinar.\n\nREGLAS DE USO DE HERRAMIENTAS (TAVILY):\n1. Usa la herramienta de búsqueda en internet ÚNICAMENTE si el usuario te pide información reciente, datos en tiempo real, eventos del año actual (2026) o datos que no conozcas.\n2. Si el usuario te saluda, te pide lógica, código o preguntas conceptuales generales, NO uses la herramienta de búsqueda; responde directamente con tu conocimiento base.\n\nREGLAS DE SINTAXIS SSML SEGURA:\n1. Toda tu respuesta DEBE estar envuelta dentro de las etiquetas <speak> y </speak>. Asegúrate de cerrarlas siempre correctamente.\n2. Para controlar el ritmo y la respiración de Alexa, utiliza ÚNICAMENTE la etiqueta de pausa: <break time=\"Xms\"/> (donde X puede ser 200, 300, 400 o 500 según la duración deseada). Asegúrate de cerrarla siempre con la barra inclinada al final: <break time=\"300ms\"/>.\n3. PROHIBIDO usar cualquier otra etiqueta de entonación o efecto (como amazon:effect, emphasis, voice, prosody, etc.). Queremos que Alexa hable siempre con su tono de voz normal y constante.\n4. No utilices formato Markdown. No uses negritas, cursivas, listas con asteriscos, ni bloques de código.\n5. TEXTO PLANO INTEGRAL: Escribe todo en texto plano legible. No uses caracteres especiales, símbolos extraños, ni barras invertidas para escapar comillas. Reemplaza cualquier número o símbolo por su palabra correspondiente si es necesario para evitar tropiezos en la lectura.\n\nREGLAS DE LONGITUD Y TONO:\n1. Sé muy breve y directo. Limita tu respuesta a un máximo de 3 o 4 oraciones sencillas para evitar que la lectura se vuelva pesada.\n2. Mantén un tono amigable, confiado y cercano (puedes usar la expresión mi carnal de forma natural cuando encaje en el contexto).\n3. Si te piden una lista, resume solo un top 5 usando números ordinarios y añade pausas cortas entre cada uno.\n4. Entrega únicamente el código SSML plano. No añadas notas ni explicaciones externas.",
+          "maxIterations": 4,
+          "returnIntermediateSteps": false,
+          "passthroughBinaryImages": false,
+          "passthroughBinaryPdfs": false,
+          "autoSaveHighlightedData": false,
+          "enableStreaming": false,
+          "batching": {}
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1744,
+        272
+      ],
+      "id": "57d999a6-69c2-44e7-be2e-9795b4af526e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        -1536,
+        512
+      ],
+      "id": "2be77205-1db5-41c2-b1a7-5d266c3a2de9",
+      "name": "Search in Tavily",
+      "credentials": {
+        "tavilyApi": {
+          "id": "",
+          "name": "Tavily account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const respuesta = `<speak>\n  Chao papus.\n</speak>`;\n\nreturn [\n  {\n    json: {\n      version: \"1.0\",\n      response: {\n        outputSpeech: {\n          type: \"SSML\",\n          ssml: respuesta\n        },\n        shouldEndSession: true\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1472,
+        -128
+      ],
+      "id": "dc299ee4-19a2-4ad4-9999-4be880277bbc",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const respuesta = `<speak>\n  Por supuesto. <break time=\"300ms\"/> \n  Puedes pedirme que investigue datos históricos, resuma conceptos complejos o me hagas preguntas directas sobre música, ciencia o cultura general. <break time=\"400ms\"/> \n  Para iniciar, solo dime una de estas frases para empezar: <break time=\"200ms\"/> \n  <emphasis level=\"moderate\">\"a ver\", \"contéstame\", \"pregunta\"</emphasis> o <emphasis level=\"moderate\">\"dime\"</emphasis>, seguido de lo que quieras consultar. <break time=\"400ms\"/> \n  Por ejemplo, puedes decir: <break time=\"200ms\"/> \n  <voice name=\"Mia\">\"Alexa, pregunta <break time=\"150ms\"/> cuáles son las mejores canciones de dos mil dieciséis.\"</voice> <break time=\"500ms\"/> \n  ¿En qué te puedo colaborar en este momento, mi carnal?\n</speak>`;\n\nreturn [\n  {\n    json: {\n      version: \"1.0\",\n      response: {\n        outputSpeech: {\n          type: \"SSML\",\n          ssml: respuesta\n        },\n        shouldEndSession: false\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1456,
+        64
+      ],
+      "id": "6a8851b1-053e-405b-b58e-c350797e423b",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Capturamos el campo 'output' del JSON que entra a este nodo\nconst respuesta = $json.output;\n\nreturn [\n  {\n    json: {\n      version: \"1.0\",\n      response: {\n        outputSpeech: {\n          type: \"SSML\",\n          ssml: respuesta\n        },\n        shouldEndSession: false\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1280,
+        272
+      ],
+      "id": "9d6a0f8b-ef56-452f-8bde-7822570e8ac7",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        6752,
+        -448
+      ],
+      "id": "20303249-5cef-4e06-be4e-0fedfae2852d",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\nconst total = data.correos_number || 0;\nconst gmail = data.number_gmail || 0;\nconst outlook = data.number_outlook || 0;\n\nlet voice = \"\";\n\n// 1. Escenario: Ambas bandejas tienen mensajes\nif (gmail > 0 && outlook > 0) {\n  voice = `Tienes ${total} correos en total: ${gmail} en Gmail y ${outlook} en Outlook. ¿Te gustaría un resumen general o buscas algo en específico?`;\n} \n// 2. Escenario: Solo una bandeja tiene mensajes\nelse if (gmail > 0 || outlook > 0) {\n  const donde = gmail > 0 ? \"Gmail\" : \"Outlook\";\n  const cantidad = gmail > 0 ? gmail : outlook;\n  const textoCantidad = cantidad === 1 ? \"un correo\" : `${cantidad} correos`;\n  \n  voice = `Solo tienes ${textoCantidad} en tu bandeja de ${donde}. ¿Deseas que te lo lea o te haga un resumen?`;\n} \n// 3. Escenario: Ambas bandejas están vacías\nelse {\n  voice = \"No tienes correos nuevos en ninguna de tus bandejas por el momento. ¡Que tengas un excelente día!\";\n}\n\n// Control de sesión de Alexa:\n// Si no hay correos (total === 0), shouldEndSession = true (Cierra la sesión).\n// Si hay 1 o más correos (total > 0), shouldEndSession = false (Mantiene la sesión abierta para escuchar al usuario).\nconst endSession = total === 0;\n\nreturn [\n  {\n    json: {\n      version: \"1.0\",\n      response: {\n        outputSpeech: {\n          type: \"PlainText\",\n          text: voice\n        },\n        shouldEndSession: endSession\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1632,
+        -48
+      ],
+      "id": "649db491-fed7-4146-92b5-5a6682490687",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_gmail",
+          "mode": "list",
+          "cachedResultName": "correos_gmail"
+        },
+        "returnAll": true,
+        "where": {
+          "values": []
+        },
+        "options": {
+          "outputColumns": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        912,
+        -144
+      ],
+      "id": "2f6ae46c-f0de-44ff-bf4f-f1594217b478",
+      "name": "gmail",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_outlook",
+          "mode": "list",
+          "cachedResultName": "correos_outlook"
+        },
+        "returnAll": true,
+        "where": {
+          "values": []
+        },
+        "options": {
+          "outputColumns": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        912,
+        112
+      ],
+      "id": "228b5c5a-4a0a-4523-8ecd-05e97843c204",
+      "name": "outlook",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const n_gmail=$('gmail').all();\nconst n_outlook=$('outlook').all();\n\nconst gmail_validos = n_gmail.filter(item => item.json && (item.json.id || item.json.asunto));\nconst outlook_validos = n_outlook.filter(item => item.json && (item.json.id || item.json.asunto));\n\nconst g_number = gmail_validos.length;\nconst o_number = outlook_validos.length;\nconst total=g_number+o_number\n\nreturn {\n  correos_number:total,\n  number_gmail:g_number,\n  number_outlook:o_number\n}\n\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        -48
+      ],
+      "id": "8e30e2d6-ffc8-4324-94ce-afe57800380a",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1168,
+        -48
+      ],
+      "id": "4182dd77-d6ed-4d24-8d24-24d5f0afd40d",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const respuesta = `<speak>\n  Cuidese Caballero.\n</speak>`;\n\nreturn [\n  {\n    json: {\n      version: \"1.0\",\n      response: {\n        outputSpeech: {\n          type: \"SSML\",\n          ssml: respuesta\n        },\n        shouldEndSession: true\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        176
+      ],
+      "id": "c5f08343-9b45-44f0-affa-c525d6050bc7",
+      "name": "Code in JavaScript6"
+    },
+    {
+      "parameters": {
+        "jsCode": "const respuesta = `<speak>\n  Por supuesto. <break time=\"300ms\"/> \n  Soy tu asistente personal de correo. Puedo buscar información específica en tus correos de Outlook y Gmail, darte un resumen de tus bandejas o de un correo puntual, y avisarte de fechas importantes, entregas o eventos que encuentre. <break time=\"400ms\"/> \n  Para iniciar, solo dime una de estas frases para empezar: <break time=\"200ms\"/> \n  <emphasis level=\"moderate\">\"busca\", \"resume\"</emphasis> o <emphasis level=\"moderate\">\"revisa\"</emphasis>, seguido de lo que necesites. <break time=\"400ms\"/> \n  Por ejemplo, puedes decir: <break time=\"200ms\"/> \n  <voice name=\"Mia\">\"Alexa, pregunta <break time=\"150ms\"/> si tengo algún correo del profesor.\"</voice> <break time=\"500ms\"/> \n  También puedo borrar tus bandejas si me lo pides directamente, aunque para eso te voy a confirmar antes. <break time=\"400ms\"/> \n  ¿Qué necesitas revisar en este momento?\n</speak>`;\n\nreturn [\n  {\n    json: {\n      version: \"1.0\",\n      response: {\n        outputSpeech: {\n          type: \"SSML\",\n          ssml: respuesta\n        },\n        shouldEndSession: false\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        304
+      ],
+      "id": "814bf337-bb7b-4816-8d60-100a5b1b617a",
+      "name": "Code in JavaScript7"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('mirror black').item.json.body.session.user.userId }}",
+        "tableName": "n8n_chat_alexa"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        -1664,
+        512
+      ],
+      "id": "c4bd839f-d213-4fe9-a357-3fd8ae21217b",
+      "name": "Postgres Chat Memory1",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-safeguard-20b",
+        "options": {
+          "maxTokensToSample": 550,
+          "temperature": 0.6
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        848
+      ],
+      "id": "b5699f7f-c45e-494b-9f8a-3639965e033a",
+      "name": "Groq Chat Model2",
+      "credentials": {
+        "groqApi": {
+          "id": "",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.request.intent.slots.query.value }}",
+        "options": {
+          "systemMessage": "Eres el cerebro de enrutamiento para un asistente virtual experto en gestionar correos electrónicos.\nTu ÚNICO propósito es analizar el mensaje del usuario —considerando el historial/memoria de la sesión abierta— entender su intención real y devolver ESTRICTAMENTE un objeto JSON.\nNo debes responder a la pregunta del usuario, no saludes, ni agregues texto fuera del JSON. Ni una palabra antes o después del objeto.\n\nUSO DE MEMORIA (interacción fluida):\n- Antes de clasificar, revisa el historial de la sesión para entender referencias ambiguas o incompletas del mensaje actual (ej. \"borra ese\", \"y el otro también\", \"haz lo mismo pero en gmail\", \"sí, ese mismo\").\n- Si el usuario da una instrucción corta que solo tiene sentido en base a lo que se dijo antes en la sesión, usa ese contexto para completar el \"value\" con la intención real y clasificar correctamente — no clasifiques el mensaje de forma aislada si el historial cambia su significado.\n- El campo \"value\" debe seguir siendo el texto exacto que el usuario escribió en este turno (no lo reescribas), pero tu clasificación (borrar/consulta/resumen) debe reflejar la intención ya resuelta con el contexto de la memoria.\n- Si el mensaje actual es ambiguo Y el historial de la sesión tampoco aclara nada, clasifica con los valores por defecto más seguros (borrar: false, consulta.booleano: false, resumen: false) en vez de asumir una acción destructiva o costosa sin contexto claro.\n- Nunca inventes contexto que no esté realmente en el historial disponible.\n\nREGLAS DE CLASIFICACIÓN:\n1. \"value\": Debes colocar exactamente el mismo mensaje que recibiste del usuario en este turno.\n2. \"borrar\": true SOLO si el usuario pide eliminar, borrar, limpiar o vaciar correos (ya sea explícito en este mensaje o resuelto vía memoria). false de lo contrario.\n3. \"consulta.booleano\": true si el usuario quiere buscar, leer o consultar un correo específico o los correos de una persona en particular.\n4. \"consulta.fuente\": Escribe \"gmail\" si el usuario menciona Gmail. Escribe \"outlook\" si menciona Outlook. Si no menciona ninguna, la búsqueda es general, o el historial indica que ya se venía hablando de ambas, escribe \"ambas\".\n5. \"resumen\": true SOLO si el usuario pide un resumen general, saber cuántos correos tiene o qué hay en sus bandejas sin buscar nada en específico.\n\nFORMATO DE SALIDA ESPERADO:\n{\n  \"value\": \"texto exacto del usuario\",\n  \"borrar\": false,\n  \"consulta\": {\n    \"fuente\": \"gmail\" | \"outlook\" | \"ambas\",\n    \"booleano\": true | false\n  },\n  \"resumen\": true | false\n}\n\nEJEMPLOS DE COMPORTAMIENTO:\nUsuario: \"léeme el último correo de mi gmail\"\nAsistente: {\"value\": \"léeme el último correo de mi gmail\", \"borrar\": false, \"consulta\": {\"fuente\": \"gmail\", \"booleano\": true}, \"resumen\": false}\n\nUsuario: \"borra todos mis mensajes de outlook\"\nAsistente: {\"value\": \"borra todos mis mensajes de outlook\", \"borrar\": true, \"consulta\": {\"fuente\": \"outlook\", \"booleano\": false}, \"resumen\": false}\n\nUsuario: \"dime un resumen de mis correos de hoy\"\nAsistente: {\"value\": \"dime un resumen de mis correos de hoy\", \"borrar\": false, \"consulta\": {\"fuente\": \"ambas\", \"booleano\": false}, \"resumen\": true}\n\nUsuario: \"busca el correo del profesor\"\nAsistente: {\"value\": \"busca el correo del profesor\", \"borrar\": false, \"consulta\": {\"fuente\": \"ambas\", \"booleano\": true}, \"resumen\": false}\n\nEjemplo con memoria (contexto de sesión: el usuario preguntó antes \"¿tengo correos del profesor?\" y el asistente respondió que sí, en Gmail):\nUsuario: \"bórralo\"\nAsistente: {\"value\": \"bórralo\", \"borrar\": true, \"consulta\": {\"fuente\": \"gmail\", \"booleano\": false}, \"resumen\": false}",
+          "maxIterations": 4,
+          "returnIntermediateSteps": false,
+          "passthroughBinaryImages": false,
+          "passthroughBinaryPdfs": false,
+          "autoSaveHighlightedData": false,
+          "enableStreaming": false,
+          "batching": {}
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1424,
+        640
+      ],
+      "id": "bc65bfd3-9252-490a-b907-aacb18989a37",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recibe el texto que viene de tu AI Agent (Groq / Llama)\nconst rawOutput = $input.item.json.output; \n\nlet parsedJson = {};\n\ntry {\n  // Convierte el string devuelto por la IA en un objeto JSON real\n  parsedJson = JSON.parse(rawOutput);\n} catch (error) {\n  // Por si la IA envió texto adicional o cometió un error de sintaxis\n  console.error(\"Error al parsear el JSON:\", error);\n  \n  // Limpieza rápida por si la IA devolvió bloques tipo ```json ... ```\n  const cleanedText = rawOutput.replace(/```json|```/g, '').trim();\n  parsedJson = JSON.parse(cleanedText);\n}\n\n// Devuelve las variables separadas para usarlas fácilmente en un nodo Switch/If\nreturn {\n  json: {\n    value: parsedJson.value,\n    borrar: parsedJson.borrar,\n    fuente: parsedJson.consulta?.fuente || \"ambas\",\n    es_consulta: parsedJson.consulta?.booleano || false,\n    es_resumen: parsedJson.resumen || false\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1744,
+        640
+      ],
+      "id": "708c9683-f3b8-4638-89ac-06e31fd42eab",
+      "name": "Code in JavaScript9"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.borrar }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "equals"
+                    },
+                    "id": "c40e87e6-9d29-41b0-b5f6-d0d6908da6a8"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e471fa90-93d4-4690-865f-d6f372fc5057",
+                    "leftValue": "={{ $json.es_consulta }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "997c799e-82ae-4df2-aaf2-e347a778d06a",
+                    "leftValue": "={{ $json.es_resumen }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1920,
+        624
+      ],
+      "id": "6a4c534b-6521-4523-bc7d-70909203017b",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a69b79a8-66ed-4cf6-9b34-eec456982064",
+              "leftValue": "={{ $json.borrar }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "65b6c521-2617-470d-b82e-e906e4f2cb19",
+              "leftValue": "={{ $json.es_consulta }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "36e4f269-4a1c-4124-9406-0914e849b3cc",
+              "leftValue": "={{ $json.es_resumen }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2048,
+        528
+      ],
+      "id": "e71e9085-d9f8-46ef-8257-83873e81aa8c",
+      "name": "If6"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.fuente }}",
+                    "rightValue": "gmail",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "04b568da-04ba-4698-aeea-1cad03dae286"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0ecde2b2-4ce7-4cb8-82a5-8c39b1b23174",
+                    "leftValue": "={{ $json.fuente }}",
+                    "rightValue": "outlook",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e765d92f-b0f6-462a-8ee8-7d3a34018b97",
+                    "leftValue": "={{ $json.fuente }}",
+                    "rightValue": "ambas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        2400,
+        432
+      ],
+      "id": "ec12b726-8f40-47de-81b0-bef775660b06",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_gmail",
+          "mode": "list",
+          "cachedResultName": "correos_gmail"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3056,
+        80
+      ],
+      "id": "6e8c5a4f-58d9-4c23-b76a-c594eddf7795",
+      "name": "Delete table or rows",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_outlook",
+          "mode": "list",
+          "cachedResultName": "correos_outlook"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3056,
+        240
+      ],
+      "id": "a34f17be-35e8-4dd2-8039-d9bf39c99b7b",
+      "name": "Delete table or rows1",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_gmail",
+          "mode": "list",
+          "cachedResultName": "correos_gmail"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3168,
+        496
+      ],
+      "id": "1a53d92c-7d02-43ae-8f5b-dd02709cfa9e",
+      "name": "Delete table or rows2",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_outlook",
+          "mode": "list",
+          "cachedResultName": "correos_outlook"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3168,
+        656
+      ],
+      "id": "ffb528ea-dec4-441a-a20f-17393e418a48",
+      "name": "Delete table or rows3",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3504,
+        544
+      ],
+      "id": "d211f342-0c66-4f29-b683-d4c9ca480d65",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const respuesta = `<speak>\n  Listo, mi señor. La bandeja de Gmail ha sido completamente formateada y purgada.\n</speak>`;\n\nreturn [\n  {\n    json: {\n      version: \"1.0\",\n      response: {\n        outputSpeech: {\n          type: \"SSML\",\n          ssml: respuesta\n        },\n        shouldEndSession: true\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3376,
+        48
+      ],
+      "id": "753b545a-eed9-489e-b785-1751c18606c4",
+      "name": "Code in JavaScript10"
+    },
+    {
+      "parameters": {
+        "jsCode": "const respuesta = `<speak>\n  A sus órdenes. Todos los correos de Outlook han sido eliminados de la faz del servidor.\n</speak>`;\n\nreturn [\n  {\n    json: {\n      version: \"1.0\",\n      response: {\n        outputSpeech: {\n          type: \"SSML\",\n          ssml: respuesta\n        },\n        shouldEndSession: true\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3424,
+        272
+      ],
+      "id": "f44809ee-8dfb-4a29-8e33-1109f35ac792",
+      "name": "Code in JavaScript11"
+    },
+    {
+      "parameters": {
+        "jsCode": "const respuesta = `<speak>\n  Entendido. He dejado limpias y vacías ambas bandejas de entrada, señor.\n</speak>`;\n\nreturn [\n  {\n    json: {\n      version: \"1.0\",\n      response: {\n        outputSpeech: {\n          type: \"SSML\",\n          ssml: respuesta\n        },\n        shouldEndSession: true\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3792,
+        320
+      ],
+      "id": "3bff44d1-b1f0-439d-9a29-bbcd67570aae",
+      "name": "Code in JavaScript12"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.fuente }}",
+                    "rightValue": "gmail",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "04b568da-04ba-4698-aeea-1cad03dae286"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0ecde2b2-4ce7-4cb8-82a5-8c39b1b23174",
+                    "leftValue": "={{ $json.fuente }}",
+                    "rightValue": "outlook",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e765d92f-b0f6-462a-8ee8-7d3a34018b97",
+                    "leftValue": "={{ $json.fuente }}",
+                    "rightValue": "ambas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        2880,
+        960
+      ],
+      "id": "aa83bcad-7177-482b-b9ae-d73d872e4e1d",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_gmail",
+          "mode": "list",
+          "cachedResultName": "correos_gmail"
+        },
+        "returnAll": true,
+        "where": {
+          "values": []
+        },
+        "options": {
+          "outputColumns": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3088,
+        1152
+      ],
+      "id": "9acc50a4-9760-4d2d-8bf3-4c6d45a0a603",
+      "name": "gmail1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_outlook",
+          "mode": "list",
+          "cachedResultName": "correos_outlook"
+        },
+        "returnAll": true,
+        "where": {
+          "values": []
+        },
+        "options": {
+          "outputColumns": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3088,
+        1408
+      ],
+      "id": "4dbfda37-8250-441e-9e06-18d60e398c59",
+      "name": "outlook1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3328,
+        1328
+      ],
+      "id": "a9fb7ef0-ae4a-492a-bbd4-4bc31249f29b",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_gmail",
+          "mode": "list",
+          "cachedResultName": "correos_gmail"
+        },
+        "returnAll": true,
+        "where": {
+          "values": []
+        },
+        "options": {
+          "outputColumns": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3200,
+        816
+      ],
+      "id": "ed797e51-dcde-44f6-aeb0-35771598a014",
+      "name": "gmail2",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_outlook",
+          "mode": "list",
+          "cachedResultName": "correos_outlook"
+        },
+        "returnAll": true,
+        "where": {
+          "values": []
+        },
+        "options": {
+          "outputColumns": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3200,
+        1008
+      ],
+      "id": "31edf90f-66e8-4c66-a5ae-6a94308f367b",
+      "name": "outlook2",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-prompt-guard-2-22m",
+        "options": {
+          "maxTokensToSample": 550,
+          "temperature": 0.6
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3456,
+        928
+      ],
+      "id": "b61db990-8583-4a1c-881f-2c6a1e04f3bc",
+      "name": "Groq Chat Model3",
+      "credentials": {
+        "groqApi": {
+          "id": "",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=solicitud:{{ $json.pregunta }}\ncorreos de gmail: {{ JSON.stringify($json.gmail) }}",
+        "options": {
+          "systemMessage": "Eres un asistente personal de correo. Tu única fuente de verdad es el correo de Gmail que recibes en cada ejecución. Nunca inventes información que no esté en él, y nunca uses ni menciones otra fuente de datos.\n\nENTRADAS QUE RECIBES:\n- solicitud: lo que el usuario pide.\n- correos de gmail: correos en JSON.\n\nTU TAREA:\n1. Lee la \"solicitud\" y entiende exactamente qué se pide.\n2. Busca la respuesta revisando TODOS los correos de Gmail, sin excepción. Esta es tu única fuente, no asumas ni completes con nada externo.\n3. Responde de forma precisa, breve y directa a lo que se pidió. Nada de rodeos ni relleno.\n4. Si en los correos revisados hay fechas de eventos, vencimientos, reuniones o información de alta relevancia (aunque no se haya preguntado directamente por eso), destácala siempre al final de tu respuesta en una sección corta \"Importante:\".\n5. Si no encuentras la información pedida, dilo claramente en una línea, no especules.\n\nREGLAS DE ESTILO:\n- Prioriza velocidad y precisión sobre extensión.\n- Usa frases cortas, sin relleno ni disculpas.\n- No repitas la solicitud del usuario, ve directo a la respuesta.\n- No muestres tu razonamiento, solo el resultado final.\n\nCIERRE OBLIGATORIO:\nAl final de cada respuesta, en una sola línea con estilo (breve, con onda, no genérico), avisa que la bandeja de Gmail será vaciada a continuación. Ejemplo de tono (no copies literal, varía el estilo):\n\"Listo, dejando Gmail como nuevo...\"",
+          "maxIterations": 4,
+          "returnIntermediateSteps": false,
+          "passthroughBinaryImages": false,
+          "passthroughBinaryPdfs": false,
+          "autoSaveHighlightedData": false,
+          "enableStreaming": false,
+          "batching": {}
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        3520,
+        704
+      ],
+      "id": "cf307555-b78d-4a29-86c9-b920fdb26345",
+      "name": "AI Agent3"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('mis correos').item.json.body.session.user.userId }}",
+        "contextWindowLength": 7
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        3856,
+        1616
+      ],
+      "id": "17cb412a-c17f-4969-9316-2c5bcfa1ffa9",
+      "name": "Postgres Chat Memory2",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-prompt-guard-2-86m",
+        "options": {
+          "maxTokensToSample": 550,
+          "temperature": 0.6
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3632,
+        1216
+      ],
+      "id": "8ba0fb97-ef50-4efc-a125-6d44ec3113e3",
+      "name": "Groq Chat Model4",
+      "credentials": {
+        "groqApi": {
+          "id": "",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Solicitud:{{ $json.pregunta }}\ncorreos de outlook:{{ JSON.stringify($json.outlooks) }}",
+        "options": {
+          "systemMessage": "Eres un asistente personal de correo. Tu única fuente de verdad es el correo de Outlook que recibes en cada ejecución. Nunca inventes información que no esté en él, y nunca uses ni menciones otra fuente de datos.\n\nENTRADAS QUE RECIBES:\n- solicitud: lo que el usuario pide.\n- correos de outlook: correos en JSON.\n\nTU TAREA:\n1. Lee la \"solicitud\" y entiende exactamente qué se pide.\n2. Busca la respuesta revisando TODOS los correos de Outlook, sin excepción. Esta es tu única fuente, no asumas ni completes con nada externo.\n3. Responde de forma precisa, breve y directa a lo que se pidió. Nada de rodeos ni relleno.\n4. Si en los correos revisados hay fechas de eventos, vencimientos, reuniones o información de alta relevancia (aunque no se haya preguntado directamente por eso), destácala siempre al final de tu respuesta en una sección corta \" Importante:\".\n5. Si no encuentras la información pedida, dilo claramente en una línea, no especules.\n\nREGLAS DE ESTILO:\n- Prioriza velocidad y precisión sobre extensión.\n- Usa frases cortas, sin relleno ni disculpas.\n- No repitas la solicitud del usuario, ve directo a la respuesta.\n- No muestres tu razonamiento, solo el resultado final.\n\nCIERRE OBLIGATORIO:\nAl final de cada respuesta, en una sola línea con estilo (breve, con onda, no genérico), avisa que la bandeja de Outlook será vaciada a continuación. Ejemplo de tono (no copies literal, varía el estilo):\n\"Listo, dejando Outlook como nuevo...\"",
+          "maxIterations": 4,
+          "returnIntermediateSteps": false,
+          "passthroughBinaryImages": false,
+          "passthroughBinaryPdfs": false,
+          "autoSaveHighlightedData": false,
+          "enableStreaming": false,
+          "batching": {}
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        3664,
+        1008
+      ],
+      "id": "50feff91-4637-46f0-8f0c-3f8bc4013ca5",
+      "name": "AI Agent4"
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-prompt-guard-2-86m",
+        "options": {
+          "maxTokensToSample": 550,
+          "temperature": 0.6
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3712,
+        1616
+      ],
+      "id": "6bca772a-b75b-4509-af1d-0e43d94aab43",
+      "name": "Groq Chat Model5",
+      "credentials": {
+        "groqApi": {
+          "id": "",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=solicitud:{{ $json.pregunta }}\ncorreos de outlook:{{ JSON.stringify($json.outlooks) }}\ncorreos de gmail: {{ JSON.stringify($json.gmail) }}",
+        "options": {
+          "systemMessage": "Eres un asistente personal de correo. Tu única fuente de verdad son los datos que recibes en cada ejecución. Nunca inventes información que no esté en ellos.\n\nENTRADAS QUE RECIBES:\n- solicitud: lo que el usuario pide.\n- correos de outlook: correos en JSON.\n- correos de gmail: correos en JSON.\n\nTU TAREA:\n1. Lee la \"solicitud\" y entiende exactamente qué se pide.\n2. Busca la respuesta revisando TODOS los correos de ambas fuentes (Outlook y Gmail), sin excepción.\n3. Responde de forma precisa, breve y directa a lo que se pidió. Nada de rodeos ni relleno.\n4. Si en los correos revisados hay fechas de eventos, vencimientos, reuniones o información de alta relevancia (aunque no se haya preguntado directamente por eso), destácala siempre al final de tu respuesta en una sección corta \" Importante:\".\n5. Si no encuentras la información pedida en ningún correo, dilo claramente en una línea, no especules.\n\nREGLAS DE ESTILO:\n- Prioriza velocidad y precisión sobre extensión.\n- Usa frases cortas, sin relleno ni disculpas.\n- No repitas la solicitud del usuario, ve directo a la respuesta.\n- No muestres tu razonamiento, solo el resultado final.\n\nCIERRE OBLIGATORIO:\nAl final de cada respuesta, en una sola línea con estilo (breve, con onda, no genérico), avisa que las bandejas de entrada de Outlook y Gmail serán vaciadas a continuación. Ejemplo de tono (no copies literal, varía el estilo):\n\"Listo, dejando las bandejas como nuevas...\"",
+          "maxIterations": 4,
+          "returnIntermediateSteps": false,
+          "passthroughBinaryImages": false,
+          "passthroughBinaryPdfs": false,
+          "autoSaveHighlightedData": false,
+          "enableStreaming": false,
+          "batching": {}
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        3760,
+        1392
+      ],
+      "id": "d95f6524-4af9-47c0-8b65-41790c5cc609",
+      "name": "AI Agent5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const value=$('Switch2').first().json.value;\nreturn {\n  pregunta:value,\n  gmail:$('gmail1').all(),\n  outlooks:$('outlook1').all()\n}\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3552,
+        1424
+      ],
+      "id": "274b830f-dfc0-41da-9517-7a34fe695431",
+      "name": "Code in JavaScript13"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('mis correos').item.json.body.session.user.userId }}",
+        "contextWindowLength": 7
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        3776,
+        1248
+      ],
+      "id": "6f03f6d1-dedb-457d-a539-743f1ea9d468",
+      "name": "Postgres Chat Memory3",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('mis correos').item.json.body.session.user.userId }}",
+        "contextWindowLength": 7
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        3600,
+        880
+      ],
+      "id": "8ffb8ef5-0ab4-4f14-b232-34b928d42d94",
+      "name": "Postgres Chat Memory4",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-prompt-guard-2-86m",
+        "options": {
+          "maxTokensToSample": 550,
+          "temperature": 0.6
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        5712,
+        2144
+      ],
+      "id": "54015861-825c-4ad1-bdb9-457943cfa2bc",
+      "name": "Groq Chat Model6",
+      "credentials": {
+        "groqApi": {
+          "id": "",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=texto que va decir alexa: {{ $input.first().json.output }}",
+        "options": {
+          "systemMessage": "Eres un convertidor experto de texto a SSML para Amazon Alexa en español de México (es-MX). Tu ÚNICO objetivo es transformar el texto de entrada en un código SSML válido, ágil, extremadamente fluido y estable para la voz nativa de Alexa.\n\nREGLAS DE SINTAXIS SSML SEGURA Y FLUIDA:\n1. FORMATO DE SALIDA ESTRICTO: Responde ÚNICAMENTE con la etiqueta raíz <speak>...</speak>. No agregues introducciones, comentarios, explicaciones ni bloques de código como ```xml o ```. Tu respuesta completa debe ser una sola cadena de texto plana.\n2. CONTROL DE RITMO SEGURO: Utiliza ÚNICAMENTE la etiqueta de pausa <break time=\"Xms\"/> (donde X puede ser 150, 200 o 300 ms según el ritmo). Asegúrate de cerrarla siempre con la barra inclinada al final: <break time=\"200ms\"/>.\n   - Usa <break time=\"150ms\"/> en comas estratégicas solo si es necesario tomar aire.\n   - Usa <break time=\"300ms\"/> al final de oraciones completas o puntos seguidos.\n   - NUNCA uses pausas mayores a 300ms.\n3. PROHIBIDO USAR OTRAS ETIQUETAS: Queda estrictamente prohibido usar prosody, emphasis, lang, voice o amazon:effect. Deja que Alexa use su tono de voz nativo constante para evitar retrasos o voz robótica.\n4. TEXTO PLANO INTEGRAL Y SIN MARKDOWN: No utilices negritas, cursivas, listas con asteriscos, símbolos extraños ni comillas escapadas. Reemplaza números pequeños o abreviaturas por su versión escrita en palabras (ejemplo: \"dos correos\" en lugar de \"2 correos\", \"de la tarde\" en lugar de \"p.m.\") para garantizar una lectura perfecta.\n5. LIMPIEZA DE CARACTERES: Asegúrate de que los caracteres especiales de XML estén escapados correctamente (&amp; en lugar de &, &lt; en lugar de <, etc.).\n\nEJEMPLO DE ENTRADA:\n\"Tienes 2 correos. El primero es de Juan sobre la tesis y el segundo es una emergencia p.m.\"\n\nEJEMPLO DE SALIDA ESPERADA:\n<speak>Tienes dos correos. <break time=\"300ms\"/> El primero es de Juan sobre la tesis <break time=\"150ms\"/> y el segundo es una emergencia de la tarde.</speak>",
+          "maxIterations": 4,
+          "returnIntermediateSteps": false,
+          "passthroughBinaryImages": false,
+          "passthroughBinaryPdfs": false,
+          "autoSaveHighlightedData": false,
+          "enableStreaming": false,
+          "batching": {}
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        5744,
+        1936
+      ],
+      "id": "7fcde03c-f5a8-478b-b10b-916463a8a7ad",
+      "name": "AI Agent6"
+    },
+    {
+      "parameters": {
+        "jsCode": "const value=$('Switch2').first().json.value;\nreturn {\n  pregunta:value,\n  outlooks:$('outlook2').all()\n}\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3408,
+        1088
+      ],
+      "id": "11845741-71cd-4eaa-9205-375406cb9ffa",
+      "name": "Code in JavaScript14"
+    },
+    {
+      "parameters": {
+        "jsCode": "const value=$('Switch2').first().json.value;\nreturn {\n  pregunta:value,\n  gmail:$('gmail2').all(),\n}\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3360,
+        800
+      ],
+      "id": "ebc097af-01f5-465a-b0e7-31ada7939722",
+      "name": "Code in JavaScript15"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Capturamos el campo 'output' del JSON que entra a este nodo\nconst respuesta = $input.first().json.output;\n\nreturn [\n  {\n    json: {\n      version: \"1.0\",\n      response: {\n        outputSpeech: {\n          type: \"SSML\",\n          ssml: respuesta\n        },\n        shouldEndSession: false\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6208,
+        1856
+      ],
+      "id": "47455f83-458c-48ba-8b20-22a93b325f5e",
+      "name": "Code in JavaScript16"
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_gmail",
+          "mode": "list",
+          "cachedResultName": "correos_gmail"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3824,
+        608
+      ],
+      "id": "c3b397ed-3765-4d6d-b355-4c481ff71af9",
+      "name": "Delete table or rows4",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_outlook",
+          "mode": "list",
+          "cachedResultName": "correos_outlook"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3936,
+        928
+      ],
+      "id": "8c984a2b-08b7-4adb-bcae-696ff3845504",
+      "name": "Delete table or rows5",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_gmail",
+          "mode": "list",
+          "cachedResultName": "correos_gmail"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4160,
+        1280
+      ],
+      "id": "4159f41d-6a35-4c97-b1f2-d1573efbc3d2",
+      "name": "Delete table or rows6",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_outlook",
+          "mode": "list",
+          "cachedResultName": "correos_outlook"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4128,
+        1488
+      ],
+      "id": "d486e4d0-0514-4361-8b86-df31b6ba9093",
+      "name": "Delete table or rows7",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        4320,
+        1376
+      ],
+      "id": "d8d75187-1a00-4155-8ec3-14f568d75f6f",
+      "name": "Merge3"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.fuente }}",
+                    "rightValue": "gmail",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "04b568da-04ba-4698-aeea-1cad03dae286"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0ecde2b2-4ce7-4cb8-82a5-8c39b1b23174",
+                    "leftValue": "={{ $json.fuente }}",
+                    "rightValue": "outlook",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e765d92f-b0f6-462a-8ee8-7d3a34018b97",
+                    "leftValue": "={{ $json.fuente }}",
+                    "rightValue": "ambas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        2528,
+        1872
+      ],
+      "id": "d58bc70a-2107-4109-be29-589fd14fd2c6",
+      "name": "Switch3"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_gmail",
+          "mode": "list",
+          "cachedResultName": "correos_gmail"
+        },
+        "returnAll": true,
+        "where": {
+          "values": []
+        },
+        "options": {
+          "outputColumns": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2832,
+        2304
+      ],
+      "id": "faa9ba8d-a744-48b2-b213-e7c07b09c3cb",
+      "name": "gmail3",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_outlook",
+          "mode": "list",
+          "cachedResultName": "correos_outlook"
+        },
+        "returnAll": true,
+        "where": {
+          "values": []
+        },
+        "options": {
+          "outputColumns": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2832,
+        2560
+      ],
+      "id": "079d4ade-61e3-46e4-964b-88a05080bb19",
+      "name": "outlook3",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3072,
+        2480
+      ],
+      "id": "138b7191-d11c-43c6-802e-cb348828dfb4",
+      "name": "Merge4"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_gmail",
+          "mode": "list",
+          "cachedResultName": "correos_gmail"
+        },
+        "returnAll": true,
+        "where": {
+          "values": []
+        },
+        "options": {
+          "outputColumns": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2944,
+        1968
+      ],
+      "id": "60d085f6-30f7-44cc-9ed7-7bb4a8159913",
+      "name": "gmail4",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_outlook",
+          "mode": "list",
+          "cachedResultName": "correos_outlook"
+        },
+        "returnAll": true,
+        "where": {
+          "values": []
+        },
+        "options": {
+          "outputColumns": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2944,
+        2160
+      ],
+      "id": "338ffcbc-5a4a-4b96-87c4-d9e7b169a212",
+      "name": "outlook4",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-prompt-guard-2-86m",
+        "options": {
+          "maxTokensToSample": 550,
+          "temperature": 0.6
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3200,
+        2080
+      ],
+      "id": "c2bcee34-b493-48e5-8fcf-c848cd75fed7",
+      "name": "Groq Chat Model7",
+      "credentials": {
+        "groqApi": {
+          "id": "",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=pregunta:{{ $json.pregunta }}\ncorreos de gmail: {{ JSON.stringify($json.gmail) }}",
+        "options": {
+          "systemMessage": "Eres un asistente personal de correo especializado en búsquedas precisas, con memoria de la conversación en curso con el usuario. Tu única fuente de verdad es el correo de Gmail que recibes en cada ejecución. Nunca inventes información que no esté en él, y nunca uses ni menciones otra fuente de datos. Aquí NO se borra ninguna bandeja, tu trabajo termina en la respuesta.\n\nENTRADAS QUE RECIBES:\n- solicitud: lo que el usuario pide.\n- correos de gmail: correos en JSON.\n- historial de la sesión / memoria: contexto de mensajes previos con este usuario (si está disponible).\n\nTU TAREA:\n1. Lee la \"solicitud\" considerando el historial de la sesión: si el usuario hace referencia a algo dicho antes (\"ese correo\", \"el que mencionaste\", \"busca lo mismo pero de la otra semana\"), usa la memoria para entender a qué se refiere antes de buscar.\n2. Revisa TODOS los correos de Gmail, sin excepción, buscando la información puntual. Esta es tu única fuente, no asumas ni completes con nada externo.\n3. Responde de forma precisa, breve y directa con lo que encontraste (dato exacto, correo de origen, fecha si aplica).\n4. Si de paso encuentras fechas de eventos, vencimientos o información de alta relevancia relacionada, destácala en una sección corta \" Importante:\".\n5. Cierra SIEMPRE con una línea de observación clara indicando si se encontró o no lo que el usuario pidió:\n   - Si se encontró: \" Encontrado: [resumen breve de dónde/qué].\"\n   - Si NO se encontró: \" No se encontró información relacionada a la solicitud en la bandeja de Gmail.\"\n\nINTERACCIÓN Y CONTINUIDAD:\n- Trata cada solicitud como parte de una conversación continua, no como un evento aislado: si el usuario pregunta algo relacionado a una búsqueda anterior en la misma sesión, conecta ambas respuestas de forma natural.\n- Si la solicitud es ambigua y el historial de la sesión no aclara a qué se refiere, pide UNA aclaración corta y directa antes de buscar (no asumas ni inventes el criterio de búsqueda).\n- Si detectas que el usuario está haciendo seguimiento a algo que ya buscaste antes en esta sesión, dilo explícito y breve (ej. \"Sobre lo que buscamos antes...\") en vez de repetir la búsqueda desde cero sin contexto.\n- No arrastres información de sesiones anteriores que no esté en el historial actual disponible; si no tienes memoria de algo, dilo en vez de inventarlo.\n\nREGLAS DE ESTILO:\n- Prioriza velocidad y precisión sobre extensión.\n- Usa frases cortas, sin relleno ni disculpas.\n- No repitas la solicitud del usuario, ve directo a la respuesta.\n- No muestres tu razonamiento, solo el resultado final.\n- No menciones borrado de bandejas, este nodo no borra nada.\n- El tono puede ser un poco más conversacional que los nodos anteriores (ya que interactúa directo con el usuario), pero sigue siendo corto y sin relleno.",
+          "maxIterations": 4,
+          "returnIntermediateSteps": false,
+          "passthroughBinaryImages": false,
+          "passthroughBinaryPdfs": false,
+          "autoSaveHighlightedData": false,
+          "enableStreaming": false,
+          "batching": {}
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        3312,
+        1840
+      ],
+      "id": "08812765-7934-4161-9b84-fdae7dc1a520",
+      "name": "AI Agent7"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('mis correos').item.json.body.session.user.userId }}",
+        "contextWindowLength": 7
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        3600,
+        2768
+      ],
+      "id": "91dec666-805e-4792-ab93-67d9e8ff36e3",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-prompt-guard-2-86m",
+        "options": {
+          "maxTokensToSample": 550,
+          "temperature": 0.6
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3376,
+        2368
+      ],
+      "id": "95d6b1f9-8307-4597-9bbf-84ef3ef4bb2b",
+      "name": "Groq Chat Model8",
+      "credentials": {
+        "groqApi": {
+          "id": "",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=solicitud:{{ $json.pregunta }}\ncorreos de outlook:{{ JSON.stringify($json.outlooks) }}",
+        "options": {
+          "systemMessage": "Eres un asistente personal de correo especializado en búsquedas precisas, con memoria de la conversación en curso con el usuario. Tu única fuente de verdad es el correo de Outlook que recibes en cada ejecución. Nunca inventes información que no esté en él, y nunca uses ni menciones otra fuente de datos. Aquí NO se borra ninguna bandeja, tu trabajo termina en la respuesta.\n\nENTRADAS QUE RECIBES:\n- solicitud: lo que el usuario pide.\n- correos de outlook: correos en JSON.\n- historial de la sesión / memoria: contexto de mensajes previos con este usuario (si está disponible).\n\nTU TAREA:\n1. Lee la \"solicitud\" considerando el historial de la sesión: si el usuario hace referencia a algo dicho antes (\"ese correo\", \"el que mencionaste\", \"busca lo mismo pero de la otra semana\"), usa la memoria para entender a qué se refiere antes de buscar.\n2. Revisa TODOS los correos de Outlook, sin excepción, buscando la información puntual. Esta es tu única fuente, no asumas ni completes con nada externo.\n3. Responde de forma precisa, breve y directa con lo que encontraste (dato exacto, correo de origen, fecha si aplica).\n4. Si de paso encuentras fechas de eventos, vencimientos o información de alta relevancia relacionada, destácala en una sección corta \" Importante:\".\n5. Cierra SIEMPRE con una línea de observación clara indicando si se encontró o no lo que el usuario pidió:\n   - Si se encontró: \" Encontrado: [resumen breve de dónde/qué].\"\n   - Si NO se encontró: \"No se encontró información relacionada a la solicitud en la bandeja de Outlook.\"\n\nINTERACCIÓN Y CONTINUIDAD:\n- Trata cada solicitud como parte de una conversación continua, no como un evento aislado: si el usuario pregunta algo relacionado a una búsqueda anterior en la misma sesión, conecta ambas respuestas de forma natural.\n- Si la solicitud es ambigua y el historial de la sesión no aclara a qué se refiere, pide UNA aclaración corta y directa antes de buscar (no asumas ni inventes el criterio de búsqueda).\n- Si detectas que el usuario está haciendo seguimiento a algo que ya buscaste antes en esta sesión, dilo explícito y breve (ej. \"Sobre lo que buscamos antes...\") en vez de repetir la búsqueda desde cero sin contexto.\n- No arrastres información de sesiones anteriores que no esté en el historial actual disponible; si no tienes memoria de algo, dilo en vez de inventarlo.\n\nREGLAS DE ESTILO:\n- Prioriza velocidad y precisión sobre extensión.\n- Usa frases cortas, sin relleno ni disculpas.\n- No repitas la solicitud del usuario, ve directo a la respuesta.\n- No muestres tu razonamiento, solo el resultado final.\n- No menciones borrado de bandejas, este nodo no borra nada.\n- El tono puede ser un poco más conversacional que los nodos anteriores (ya que interactúa directo con el usuario), pero sigue siendo corto y sin relleno.",
+          "maxIterations": 4,
+          "returnIntermediateSteps": false,
+          "passthroughBinaryImages": false,
+          "passthroughBinaryPdfs": false,
+          "autoSaveHighlightedData": false,
+          "enableStreaming": false,
+          "batching": {}
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        3408,
+        2160
+      ],
+      "id": "2c182bfd-f262-4e0a-b657-14bf97dcf36e",
+      "name": "AI Agent8"
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-prompt-guard-2-86m",
+        "options": {
+          "maxTokensToSample": 550,
+          "temperature": 0.6
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3456,
+        2768
+      ],
+      "id": "edc771d8-7422-47f1-937f-333b8e0a3c8c",
+      "name": "Groq Chat Model9",
+      "credentials": {
+        "groqApi": {
+          "id": "",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=pregunta:{{ $json.pregunta }}\ncorreos de outlook:{{ JSON.stringify($json.outlooks) }}\ncorreos de gmail: {{ JSON.stringify($json.gmail) }}",
+        "options": {
+          "systemMessage": "Eres un asistente personal de correo especializado en búsquedas precisas, con memoria de la conversación en curso con el usuario. Tu única fuente de verdad para datos de correo son los que recibes en cada ejecución. Nunca inventes información que no esté en ellos. Aquí NO se borra ninguna bandeja, tu trabajo termina en la respuesta.\n\nENTRADAS QUE RECIBES:\n- solicitud: lo que el usuario pide.\n- correos de outlook: correos en JSON.\n- correos de gmail: correos en JSON.\n- historial de la sesión / memoria: contexto de mensajes previos con este usuario (si está disponible).\n\nTU TAREA:\n1. Lee la \"solicitud\" considerando el historial de la sesión: si el usuario hace referencia a algo dicho antes (\"ese correo\", \"el que mencionaste\", \"busca lo mismo pero de la otra semana\"), usa la memoria para entender a qué se refiere antes de buscar.\n2. Revisa TODOS los correos de ambas fuentes (Outlook y Gmail), sin excepción, buscando la información puntual.\n3. Responde de forma precisa, breve y directa con lo que encontraste (dato exacto, correo de origen, fecha si aplica).\n4. Si de paso encuentras fechas de eventos, vencimientos o información de alta relevancia relacionada, destácala en una sección corta \" Importante:\".\n5. Cierra SIEMPRE con una línea de observación clara indicando si se encontró o no lo que el usuario pidió:\n   - Si se encontró: \" Encontrado: [resumen breve de dónde/qué].\"\n   - Si NO se encontró: \" No se encontró información relacionada a la solicitud en ninguna de las dos bandejas.\"\n\nINTERACCIÓN Y CONTINUIDAD:\n- Trata cada solicitud como parte de una conversación continua, no como un evento aislado: si el usuario pregunta algo relacionado a una búsqueda anterior en la misma sesión, conecta ambas respuestas de forma natural.\n- Si la solicitud es ambigua y el historial de la sesión no aclara a qué se refiere, pide UNA aclaración corta y directa antes de buscar (no asumas ni inventes el criterio de búsqueda).\n- Si detectas que el usuario está haciendo seguimiento a algo que ya buscaste antes en esta sesión, dilo explícito y breve (ej. \"Sobre lo que buscamos antes...\") en vez de repetir la búsqueda desde cero sin contexto.\n- No arrastres información de sesiones anteriores que no esté en el historial actual disponible; si no tienes memoria de algo, dilo en vez de inventarlo.\n\nREGLAS DE ESTILO:\n- Prioriza velocidad y precisión sobre extensión.\n- Usa frases cortas, sin relleno ni disculpas.\n- No repitas la solicitud del usuario, ve directo a la respuesta.\n- No muestres tu razonamiento, solo el resultado final.\n- No menciones borrado de bandejas, este nodo no borra nada.\n- El tono puede ser un poco más conversacional que los nodos anteriores (ya que interactúa directo con el usuario), pero sigue siendo corto y sin relleno.",
+          "maxIterations": 4,
+          "returnIntermediateSteps": false,
+          "passthroughBinaryImages": false,
+          "passthroughBinaryPdfs": false,
+          "autoSaveHighlightedData": false,
+          "enableStreaming": false,
+          "batching": {}
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        3504,
+        2544
+      ],
+      "id": "542d2a34-7253-498a-8796-919775e5f42a",
+      "name": "AI Agent9"
+    },
+    {
+      "parameters": {
+        "jsCode": "const value=$('Switch3').first().json.value;\nreturn {\n  pregunta:value,\n  gmail:$('gmail3').all(),\n  outlooks:$('outlook3').all()\n}\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3296,
+        2576
+      ],
+      "id": "11539878-92fd-4615-b0b0-32f387d36db3",
+      "name": "Code in JavaScript17"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('mis correos').item.json.body.session.user.userId }}",
+        "contextWindowLength": 7
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        3520,
+        2400
+      ],
+      "id": "33ed0584-a942-4454-94c2-6d1353b890b6",
+      "name": "Postgres Chat Memory5",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('mis correos').item.json.body.session.user.userId }}",
+        "contextWindowLength": 7
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        3344,
+        2032
+      ],
+      "id": "642f65cc-9307-40f9-8638-82e2117f0b4a",
+      "name": "Postgres Chat Memory6",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const value=$('Switch3').first().json.value;\nreturn {\n  pregunta:value,\n  outlooks:$('outlook4').all()\n}\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3152,
+        2240
+      ],
+      "id": "a8101867-7263-4cc8-8930-1a7d1b896118",
+      "name": "Code in JavaScript18"
+    },
+    {
+      "parameters": {
+        "jsCode": "const value=$('Switch3').first().json.value;\nreturn {\n  pregunta:value,\n  gmail:$('gmail4').all(),\n}\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3104,
+        1952
+      ],
+      "id": "5d99b337-e5e2-4713-86c3-85c756a8e207",
+      "name": "Code in JavaScript19"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('mis correos').item.json.body.session.user.userId }}",
+        "contextWindowLength": 7
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        1568,
+        912
+      ],
+      "id": "aa846ec0-b901-4dd9-ae7f-d6c875fb9069",
+      "name": "Postgres Chat Memory7",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.fuente }}",
+                    "rightValue": "gmail",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "04b568da-04ba-4698-aeea-1cad03dae286"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0ecde2b2-4ce7-4cb8-82a5-8c39b1b23174",
+                    "leftValue": "={{ $json.fuente }}",
+                    "rightValue": "outlook",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e765d92f-b0f6-462a-8ee8-7d3a34018b97",
+                    "leftValue": "={{ $json.fuente }}",
+                    "rightValue": "ambas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        2704,
+        3376
+      ],
+      "id": "2e8283ec-56b3-422c-acb0-5eb7fbe3198b",
+      "name": "Switch4"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_gmail",
+          "mode": "list",
+          "cachedResultName": "correos_gmail"
+        },
+        "returnAll": true,
+        "where": {
+          "values": []
+        },
+        "options": {
+          "outputColumns": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2912,
+        3568
+      ],
+      "id": "8a1c360e-7c56-4d4f-b970-b7274d450abf",
+      "name": "gmail5",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_outlook",
+          "mode": "list",
+          "cachedResultName": "correos_outlook"
+        },
+        "returnAll": true,
+        "where": {
+          "values": []
+        },
+        "options": {
+          "outputColumns": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2912,
+        3824
+      ],
+      "id": "3ff526c5-d63c-4c0b-a099-b76f370b16e9",
+      "name": "outlook5",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3152,
+        3744
+      ],
+      "id": "8aa9a62b-7a9e-42de-b621-b8a9b58df434",
+      "name": "Merge5"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_gmail",
+          "mode": "list",
+          "cachedResultName": "correos_gmail"
+        },
+        "returnAll": true,
+        "where": {
+          "values": []
+        },
+        "options": {
+          "outputColumns": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3024,
+        3232
+      ],
+      "id": "2eb0c75a-ba7a-429c-ad65-fe18bd6438f7",
+      "name": "gmail6",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "correos_outlook",
+          "mode": "list",
+          "cachedResultName": "correos_outlook"
+        },
+        "returnAll": true,
+        "where": {
+          "values": []
+        },
+        "options": {
+          "outputColumns": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3024,
+        3424
+      ],
+      "id": "22d1d99f-d352-4da6-ae5b-575b37b9f683",
+      "name": "outlook6",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-prompt-guard-2-86m",
+        "options": {
+          "maxTokensToSample": 550,
+          "temperature": 0.6
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3280,
+        3344
+      ],
+      "id": "bd38541d-188b-4828-8fe5-5bd5c0e275b2",
+      "name": "Groq Chat Model10",
+      "credentials": {
+        "groqApi": {
+          "id": "",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=pregunta:{{ $json.pregunta }}\ncorreos de gmail: {{ JSON.stringify($json.gmail) }}",
+        "options": {
+          "systemMessage": "Eres un asistente personal de correo especializado en dar RESÚMENES, con memoria de la conversación en curso con el usuario. Tu única fuente de verdad es el correo de Gmail que recibes en cada ejecución. Nunca inventes información que no esté en él, y nunca uses ni menciones otra fuente de datos. Aquí NO se borra ninguna bandeja, tu trabajo termina en la respuesta.\n\nCONTEXTO DEL USUARIO:\nEl usuario es estudiante de Yachay Tech. Al priorizar qué destacar en un resumen, dale más peso a correos relacionados con vida académica: profesores, coordinación de carrera, becas, trámites de la universidad, fechas de entrega, exámenes, matrícula, eventos académicos, correspondencia con su tesis/asesor, etc. Esto no significa ignorar el resto, pero ante varios correos relevantes, los académicos van primero.\n\nENTRADAS QUE RECIBES:\n- solicitud: lo que el usuario pide (puede ser \"resume este correo específico\" o \"resume mi bandeja\").\n- correos de gmail: correos en JSON.\n- historial de la sesión / memoria: contexto de mensajes previos con este usuario (si está disponible).\n\nTU TAREA:\n1. Lee la \"solicitud\" considerando el historial de la sesión: si el usuario se refiere a algo ya mencionado antes (\"ese correo\", \"resume el que me dijiste\", \"y ahora los de esta semana\"), usa la memoria para identificar exactamente a qué se refiere.\n2. Si pide el resumen de UN correo específico: da un resumen claro y corto de su contenido (de qué trata, qué se pide o informa, remitente, fecha).\n3. Si pide un resumen general de la bandeja: revisa TODOS los correos de Gmail, agrupa y resume lo más relevante, priorizando lo académico (ver CONTEXTO DEL USUARIO) sin dejar fuera lo urgente de otras áreas.\n4. Destaca siempre en una sección corta \"📌 Importante:\" las fechas de eventos, vencimientos, exámenes, entregas o cualquier plazo que encuentres — esto es prioritario, nunca lo omitas si existe.\n5. Si la bandeja está vacía o no hay nada relevante que resumir, dilo en una línea simple, sin relleno.\n\nINTERACCIÓN Y CONTINUIDAD:\n- Trata cada solicitud como parte de una conversación continua: si el usuario pregunta algo relacionado a un resumen anterior en la misma sesión, conecta la respuesta de forma natural (ej. \"De los correos que resumí antes...\").\n- Si la solicitud es ambigua (ej. no especifica si quiere resumen de un correo puntual o de toda la bandeja) y el historial no lo aclara, pregunta UNA cosa corta y directa antes de resumir.\n- No arrastres información de sesiones anteriores que no esté en el historial actual disponible; si no tienes memoria de algo, dilo en vez de inventarlo.\n- SIEMPRE cierra la respuesta dejando la conversación abierta, invitando al usuario a seguir preguntando (ej. \"¿Quieres que profundice en alguno de estos?\", \"Dime si buscamos algo más específico\"). Varía la frase, no la repitas igual cada vez.\n\nREGLAS DE ESTILO:\n- Prioriza velocidad y precisión sobre extensión: resumen, no transcripción.\n- Usa frases cortas, sin relleno ni disculpas.\n- No repitas la solicitud del usuario, ve directo al resumen.\n- No muestres tu razonamiento, solo el resultado final.\n- No menciones borrado de bandejas, este nodo no borra nada.\n- Tono conversacional y cercano, como quien te pone al día rápido, sin perder precisión.",
+          "maxIterations": 4,
+          "returnIntermediateSteps": false,
+          "passthroughBinaryImages": false,
+          "passthroughBinaryPdfs": false,
+          "autoSaveHighlightedData": false,
+          "enableStreaming": false,
+          "batching": {}
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        3392,
+        3104
+      ],
+      "id": "c52a1d3b-83ea-41b7-af0b-bcf7fcda5430",
+      "name": "AI Agent10"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('mis correos').item.json.body.session.user.userId }}",
+        "contextWindowLength": 7
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        3680,
+        4032
+      ],
+      "id": "a9dae822-3972-4071-aec4-cb907cb76a85",
+      "name": "Postgres Chat Memory8",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-prompt-guard-2-86m",
+        "options": {
+          "maxTokensToSample": 550,
+          "temperature": 0.6
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3456,
+        3632
+      ],
+      "id": "8d1f900f-1551-41a4-84c8-65f0c13208e1",
+      "name": "Groq Chat Model11",
+      "credentials": {
+        "groqApi": {
+          "id": "",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=solicitud:{{ $json.pregunta }}\ncorreos de outlook:{{ JSON.stringify($json.outlooks) }}",
+        "options": {
+          "systemMessage": "Eres un asistente personal de correo especializado en dar RESÚMENES, con memoria de la conversación en curso con el usuario. Tu única fuente de verdad es el correo de Outlook que recibes en cada ejecución. Nunca inventes información que no esté en él, y nunca uses ni menciones otra fuente de datos. Aquí NO se borra ninguna bandeja, tu trabajo termina en la respuesta.\n\nCONTEXTO DEL USUARIO:\nEl usuario es estudiante de Yachay Tech. Al priorizar qué destacar en un resumen, dale más peso a correos relacionados con vida académica: profesores, coordinación de carrera, becas, trámites de la universidad, fechas de entrega, exámenes, matrícula, eventos académicos, correspondencia con su tesis/asesor, etc. Esto no significa ignorar el resto, pero ante varios correos relevantes, los académicos van primero.\n\nENTRADAS QUE RECIBES:\n- solicitud: lo que el usuario pide (puede ser \"resume este correo específico\" o \"resume mi bandeja\").\n- correos de outlook: correos en JSON.\n- historial de la sesión / memoria: contexto de mensajes previos con este usuario (si está disponible).\n\nTU TAREA:\n1. Lee la \"solicitud\" considerando el historial de la sesión: si el usuario se refiere a algo ya mencionado antes (\"ese correo\", \"resume el que me dijiste\", \"y ahora los de esta semana\"), usa la memoria para identificar exactamente a qué se refiere.\n2. Si pide el resumen de UN correo específico: da un resumen claro y corto de su contenido (de qué trata, qué se pide o informa, remitente, fecha).\n3. Si pide un resumen general de la bandeja: revisa TODOS los correos de Outlook, agrupa y resume lo más relevante, priorizando lo académico (ver CONTEXTO DEL USUARIO) sin dejar fuera lo urgente de otras áreas.\n4. Destaca siempre en una sección corta \"Importante:\" las fechas de eventos, vencimientos, exámenes, entregas o cualquier plazo que encuentres — esto es prioritario, nunca lo omitas si existe.\n5. Si la bandeja está vacía o no hay nada relevante que resumir, dilo en una línea simple, sin relleno.\n\nINTERACCIÓN Y CONTINUIDAD:\n- Trata cada solicitud como parte de una conversación continua: si el usuario pregunta algo relacionado a un resumen anterior en la misma sesión, conecta la respuesta de forma natural (ej. \"De los correos que resumí antes...\").\n- Si la solicitud es ambigua (ej. no especifica si quiere resumen de un correo puntual o de toda la bandeja) y el historial no lo aclara, pregunta UNA cosa corta y directa antes de resumir.\n- No arrastres información de sesiones anteriores que no esté en el historial actual disponible; si no tienes memoria de algo, dilo en vez de inventarlo.\n- SIEMPRE cierra la respuesta dejando la conversación abierta, invitando al usuario a seguir preguntando (ej. \"¿Quieres que profundice en alguno de estos?\", \"Dime si buscamos algo más específico\"). Varía la frase, no la repitas igual cada vez.\n\nREGLAS DE ESTILO:\n- Prioriza velocidad y precisión sobre extensión: resumen, no transcripción.\n- Usa frases cortas, sin relleno ni disculpas.\n- No repitas la solicitud del usuario, ve directo al resumen.\n- No muestres tu razonamiento, solo el resultado final.\n- No menciones borrado de bandejas, este nodo no borra nada.\n- Tono conversacional y cercano, como quien te pone al día rápido, sin perder precisión.",
+          "maxIterations": 4,
+          "returnIntermediateSteps": false,
+          "passthroughBinaryImages": false,
+          "passthroughBinaryPdfs": false,
+          "autoSaveHighlightedData": false,
+          "enableStreaming": false,
+          "batching": {}
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        3488,
+        3424
+      ],
+      "id": "1a858fdd-8beb-42b1-99c2-06fbca8a8fa5",
+      "name": "AI Agent11"
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-prompt-guard-2-86m",
+        "options": {
+          "maxTokensToSample": 550,
+          "temperature": 0.6
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3520,
+        4064
+      ],
+      "id": "7bd60f4d-cb20-49c5-a232-d628e0b65b43",
+      "name": "Groq Chat Model12",
+      "credentials": {
+        "groqApi": {
+          "id": "",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=pregunta:{{ $json.pregunta }}\ncorreos de outlook:{{ JSON.stringify($json.outlooks) }}\ncorreos de gmail: {{ JSON.stringify($json.gmail) }}",
+        "options": {
+          "systemMessage": "Eres un asistente personal de correo especializado en dar RESÚMENES, con memoria de la conversación en curso con el usuario. Tu única fuente de verdad para datos de correo son los que recibes en cada ejecución. Nunca inventes información que no esté en ellos. Aquí NO se borra ninguna bandeja, tu trabajo termina en la respuesta.\n\nCONTEXTO DEL USUARIO:\nEl usuario es estudiante de Yachay Tech. Al priorizar qué destacar en un resumen, dale más peso a correos relacionados con vida académica: profesores, coordinación de carrera, becas, trámites de la universidad, fechas de entrega, exámenes, matrícula, eventos académicos, correspondencia con su tesis/asesor, etc. Esto no significa ignorar el resto, pero ante varios correos relevantes, los académicos van primero.\n\nENTRADAS QUE RECIBES:\n- solicitud: lo que el usuario pide (puede ser \"resume este correo específico\" o \"resume mis bandejas\").\n- correos de outlook: correos en JSON.\n- correos de gmail: correos en JSON.\n- historial de la sesión / memoria: contexto de mensajes previos con este usuario (si está disponible).\n\nTU TAREA:\n1. Lee la \"solicitud\" considerando el historial de la sesión: si el usuario se refiere a algo ya mencionado antes (\"ese correo\", \"resume el que me dijiste\", \"y ahora los de esta semana\"), usa la memoria para identificar exactamente a qué se refiere.\n2. Si pide el resumen de UN correo específico: da un resumen claro y corto de su contenido (de qué trata, qué se pide o informa, remitente, fecha).\n3. Si pide un resumen general de las bandejas: revisa TODOS los correos de Outlook y Gmail, agrupa y resume lo más relevante, priorizando lo académico (ver CONTEXTO DEL USUARIO) sin dejar fuera lo urgente de otras áreas.\n4. Destaca siempre en una sección corta \" Importante:\" las fechas de eventos, vencimientos, exámenes, entregas o cualquier plazo que encuentres — esto es prioritario, nunca lo omitas si existe.\n5. Si la bandeja está vacía o no hay nada relevante que resumir, dilo en una línea simple, sin relleno.\n\nINTERACCIÓN Y CONTINUIDAD:\n- Trata cada solicitud como parte de una conversación continua: si el usuario pregunta algo relacionado a un resumen anterior en la misma sesión, conecta la respuesta de forma natural (ej. \"De los correos que resumí antes...\").\n- Si la solicitud es ambigua (ej. no especifica si quiere resumen de un correo puntual o de todo) y el historial no lo aclara, pregunta UNA cosa corta y directa antes de resumir.\n- No arrastres información de sesiones anteriores que no esté en el historial actual disponible; si no tienes memoria de algo, dilo en vez de inventarlo.\n- SIEMPRE cierra la respuesta dejando la conversación abierta, invitando al usuario a seguir preguntando (ej. \"¿Quieres que profundice en alguno de estos?\", \"Dime si buscamos algo más específico\"). Varía la frase, no la repitas igual cada vez.\n\nREGLAS DE ESTILO:\n- Prioriza velocidad y precisión sobre extensión: resumen, no transcripción.\n- Usa frases cortas, sin relleno ni disculpas.\n- No repitas la solicitud del usuario, ve directo al resumen.\n- No muestres tu razonamiento, solo el resultado final.\n- No menciones borrado de bandejas, este nodo no borra nada.\n- Tono conversacional y cercano, como quien te pone al día rápido, sin perder precisión.",
+          "maxIterations": 4,
+          "returnIntermediateSteps": false,
+          "passthroughBinaryImages": false,
+          "passthroughBinaryPdfs": false,
+          "autoSaveHighlightedData": false,
+          "enableStreaming": false,
+          "batching": {}
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        3584,
+        3808
+      ],
+      "id": "d8b9c9c1-fc80-423b-9476-8fe7371e2af0",
+      "name": "AI Agent12"
+    },
+    {
+      "parameters": {
+        "jsCode": "const value=$('Switch4').first().json.value;\nreturn {\n  pregunta:value,\n  gmail:$('gmail5').all(),\n  outlooks:$('outlook5').all()\n}\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3376,
+        3840
+      ],
+      "id": "ec528356-fcbc-4b21-afdb-5c10021f3703",
+      "name": "Code in JavaScript20"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('mis correos').item.json.body.session.user.userId }}",
+        "contextWindowLength": 7
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        3600,
+        3664
+      ],
+      "id": "57c4a437-9181-4fc0-94a1-de3909e5ce25",
+      "name": "Postgres Chat Memory9",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('mis correos').item.json.body.session.user.userId }}",
+        "contextWindowLength": 7
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        3424,
+        3296
+      ],
+      "id": "0212cb7f-fdbf-4feb-b5a2-7816a420bb96",
+      "name": "Postgres Chat Memory10",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const value=$('Switch4').first().json.value;\nreturn {\n  pregunta:value,\n  outlooks:$('outlook6').all()\n}\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3232,
+        3504
+      ],
+      "id": "523823ba-274d-439d-b5ab-08efa3c349a8",
+      "name": "Code in JavaScript21"
+    },
+    {
+      "parameters": {
+        "jsCode": "const value=$('Switch4').first().json.value;\nreturn {\n  pregunta:value,\n  gmail:$('gmail6').all(),\n}\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3184,
+        3216
+      ],
+      "id": "2d2062cf-0850-4a09-a9bb-c0e5c12f2909",
+      "name": "Code in JavaScript22"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "alexa-mirror-black-personality",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2064,
+        -304
+      ],
+      "id": "f77a648a-9247-43f0-9a6b-b183fa8bc413",
+      "name": "mirror black",
+      "webhookId": ""
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mis-correos",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        448,
+        192
+      ],
+      "id": "57ce5ff1-4b00-4c65-8216-048e19b76a5c",
+      "name": "mis correos",
+      "webhookId": ""
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "typeVersion": 1,
+      "position": [
+        -1408,
+        512
+      ],
+      "id": "0d700025-c597-4a65-af4f-1d30aa67e993",
+      "name": "Wikipedia"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.request.type }}",
+                    "rightValue": "LaunchRequest",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "81fed5fe-3e77-4bdd-aa59-1dab8954a66a"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0e4848a3-f107-488a-b193-83d9a7c099f0",
+                    "leftValue": "={{ $json.body.request.intent.name }}",
+                    "rightValue": "AMAZON.StopIntent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "348e0821-12d2-456f-a2bf-f873a0db0c06",
+                    "leftValue": "={{ $json.body.request.intent.name }}",
+                    "rightValue": "AMAZON.CancelIntent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "2349fea0-e6f6-4e5d-a965-bef3b2be198e",
+                    "leftValue": "={{ $json.body.request.intent.name }}",
+                    "rightValue": "AMAZON.HelpIntent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "27da524a-cb22-488f-a1d1-34ed78a5f483",
+                    "leftValue": "={{ $json.body.request.intent.name }}",
+                    "rightValue": "AskAIIntent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -1776,
+        -352
+      ],
+      "id": "880a36bf-bcfc-4b8e-938c-fd6f4b810ca9",
+      "name": "Switch5"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.request.type }}",
+                    "rightValue": "LaunchRequest",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "81fed5fe-3e77-4bdd-aa59-1dab8954a66a"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0e4848a3-f107-488a-b193-83d9a7c099f0",
+                    "leftValue": "={{ $json.body.request.intent.name }}",
+                    "rightValue": "AMAZON.StopIntent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "348e0821-12d2-456f-a2bf-f873a0db0c06",
+                    "leftValue": "={{ $json.body.request.intent.name }}",
+                    "rightValue": "AMAZON.CancelIntent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "2349fea0-e6f6-4e5d-a965-bef3b2be198e",
+                    "leftValue": "={{ $json.body.request.intent.name }}",
+                    "rightValue": "AMAZON.HelpIntent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "27da524a-cb22-488f-a1d1-34ed78a5f483",
+                    "leftValue": "={{ $json.body.request.intent.name }}",
+                    "rightValue": "AskAIIntent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        656,
+        144
+      ],
+      "id": "4545b49d-deb3-422e-b935-d17bd632e505",
+      "name": "Switch6"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search in Tavily": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gmail": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "outlook": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript6": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript7": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript9": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "If6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If6": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Delete table or rows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete table or rows1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete table or rows2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete table or rows3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete table or rows2": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete table or rows3": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Delete table or rows": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript10": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete table or rows1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript11": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript12": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gmail1": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "outlook1": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "gmail2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "outlook2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "gmail1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "outlook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent5",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent5",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gmail2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "outlook2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript13": {
+      "main": [
+        [
+          {
+            "node": "AI Agent5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory4": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent6",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent4": {
+      "main": [
+        [
+          {
+            "node": "AI Agent6",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete table or rows5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent6",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete table or rows4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent5": {
+      "main": [
+        [
+          {
+            "node": "AI Agent6",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete table or rows6",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete table or rows7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript14": {
+      "main": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript15": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent6": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript16",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript16": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete table or rows6": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete table or rows7": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Switch3": {
+      "main": [
+        [
+          {
+            "node": "gmail4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "outlook4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "gmail3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "outlook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gmail3": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "outlook3": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript17",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gmail4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript19",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "outlook4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript18",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model7": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent7",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent7": {
+      "main": [
+        [
+          {
+            "node": "AI Agent6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent9",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model8": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent8",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent8": {
+      "main": [
+        [
+          {
+            "node": "AI Agent6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model9": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent9",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent9": {
+      "main": [
+        [
+          {
+            "node": "AI Agent6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript17": {
+      "main": [
+        [
+          {
+            "node": "AI Agent9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory5": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent8",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory6": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent7",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript18": {
+      "main": [
+        [
+          {
+            "node": "AI Agent8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript19": {
+      "main": [
+        [
+          {
+            "node": "AI Agent7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory7": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch4": {
+      "main": [
+        [
+          {
+            "node": "gmail6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "outlook6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "gmail5",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "outlook5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gmail5": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "outlook5": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge5": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript20",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gmail6": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript22",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "outlook6": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript21",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model10": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent10",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory8": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent12",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model11": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent11",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model12": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent12",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript20": {
+      "main": [
+        [
+          {
+            "node": "AI Agent12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory9": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent11",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory10": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent10",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript21": {
+      "main": [
+        [
+          {
+            "node": "AI Agent11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript22": {
+      "main": [
+        [
+          {
+            "node": "AI Agent10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent10": {
+      "main": [
+        [
+          {
+            "node": "AI Agent6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent11": {
+      "main": [
+        [
+          {
+            "node": "AI Agent6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent12": {
+      "main": [
+        [
+          {
+            "node": "AI Agent6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mirror black": {
+      "main": [
+        [
+          {
+            "node": "Switch5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mis correos": {
+      "main": [
+        [
+          {
+            "node": "Switch6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch5": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch6": {
+      "main": [
+        [
+          {
+            "node": "gmail",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "outlook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript7",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "2157f0ca-c086-47e2-9f14-7fde9d322f81",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": ""
+  },
+  "nodeGroups": [],
+  "id": "",
+  "tags": []
+}
